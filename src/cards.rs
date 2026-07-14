@@ -15,12 +15,12 @@ pub fn cards_plugin(app : &mut App) {
 struct PlayedCards(Vec<Card>);
 
 
-
 pub struct Card {
     value : u8,
     suit : Suit,
 }
 
+#[derive(PartialEq)]
 pub enum Suit {
     Hearts,
     Diamonds,
@@ -28,20 +28,9 @@ pub enum Suit {
     Spades
 }
 
-/// Identifies the actual player from the bots
-#[derive(Component)]
-struct Player;
-
-/// welke cards van de player zijn
-#[derive(Component)]
-struct Cards;
-
-
 #[derive(Resource, Default)]
 struct CurrentTrick(Trick);
 
-#[derive(Component)]
-struct WonTricks();
 
 #[derive(Default)]
 pub struct Trick {
@@ -56,13 +45,19 @@ impl Trick {
         }
         None
     }
+
+    /// Returns index of the winning card, 0-3.
+    /// None if there's an incorrect amount of cards played
+    pub fn winner(&self, trump : Suit) -> Option<usize> {
+        if self.cards.len() != 4 {
+            return None;
+        }
+        let vals = self.cards.iter().map(|c| {
+            if c.suit == trump { (c.value + 13) as usize } else { c.value as usize }
+        });
+        vals.max()
+    }
 }
-
-#[derive(Component)]
-struct Participant;
-
-#[derive(Component)]
-struct ParticipantIndex(u8);
 
 
 

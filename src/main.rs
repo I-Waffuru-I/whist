@@ -3,6 +3,7 @@ use bevy::prelude::*;
 
 mod cards;
 mod menu;
+mod player;
 
 fn main() {
     App::new()
