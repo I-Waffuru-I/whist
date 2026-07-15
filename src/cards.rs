@@ -12,17 +12,18 @@ pub fn cards_plugin(app : &mut App) {
 }
 
 #[derive(Resource, Default)]
-pub struct PlayedCards(Vec<Card>);
+pub struct PlayedCards(pub Vec<Card>);
 
 #[derive(Resource, Default)]
-pub struct CurrentTrick(Trick);
+pub struct CurrentTrick(pub Trick);
 
+#[derive(Clone)]
 pub struct Card {
     value : u8,
     suit : Suit,
 }
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Clone)]
 pub enum Suit {
     Hearts,
     Diamonds,

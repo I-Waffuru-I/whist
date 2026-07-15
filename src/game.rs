@@ -24,18 +24,39 @@ pub enum GameState {
 fn start_round(
     mut dealer : ResMut<Dealer>,
     played_cards : ResMut<PlayedCards>, 
-    participants : Query<(&Cards, &PPosition), With<Participant>>,
+    mut participants : Query<(Entity, &mut Cards, &PPosition), With<Participant>>,
     mut next_game_state : ResMut<NextState<GameState>>,
 ){
-    // rotate dealer
-    dealer.0 = match dealer.0 {
-        PPosition::West => PPosition::North,
-        PPosition::North => PPosition::East,
-        PPosition::East => PPosition::South,
-        PPosition::South => PPosition::West,
-    };
-    
+    dealer.0 = dealer.0.next();
+
+    // cut deck 
+
     // distribute cards
+    let mut players : Vec<Entity> = vec!();
+    let mut ppos = dealer.0.clone();
+    for _ in 0..=3 {
+        if let Some(p) = participants.iter().find(|e| e.2 == &ppos) {
+            players.push(p.0);
+        }
+        ppos = ppos.next();
+    }
+
+    // distribute cards to players
+    // 2 x 4
+    let mut i : usize = 0;
+    for _ in 0..=1 {
+        for entity in &mut players {
+            if let Ok(mut p) = participants.get_mut(*entity) {
+                for card in 0..=3 {
+                    if let Some(c) = played_cards.0.iter().nth(i+card) {
+                        p.1.0.push(c.clone());
+                    }
+                }
+                i += 4;
+            }
+        }
+    }
+    // 1 x 5
 
     // finish setup
     next_game_state.set(GameState::StartTrick);
