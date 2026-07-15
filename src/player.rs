@@ -1,28 +1,33 @@
 
 use bevy::prelude::*;
 
-use crate::cards::Trick;
+use crate::{cards::{Card, Trick}};
 
-
-pub fn players_plugin(app : &mut App) {
-
-
+#[derive(Component, Default)]
+pub enum PPosition {
+    #[default]
+    North, 
+    East,
+    South,
+    West
 }
 
 /// Separates the actual player from the bots
 #[derive(Component)]
-struct Player;
+pub struct Player;
+
+/// tag to query bots & player 
+#[derive(Component)]
+pub struct Participant;
+
+#[derive(Resource, Default)]
+pub struct Dealer(pub PPosition);
 
 /// welke cards van de player zijn
-#[derive(Component)]
-struct Cards;
+#[derive(Component, Default)]
+pub struct Cards(Vec<Card>);
 
 /// the tricks the user won this round
-#[derive(Component)]
-struct WonTricks(Vec<Trick>);
+#[derive(Component, Default)]
+pub struct WonTricks(Vec<Trick>);
 
-#[derive(Component)]
-struct Participant;
-
-#[derive(Component)]
-struct ParticipantIndex(u8);

@@ -4,13 +4,14 @@ use bevy::prelude::*;
 mod cards;
 mod menu;
 mod player;
+mod game;
 
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
         .add_systems(Startup, setup)
         .init_state::<AppState>()
-        .add_plugins((menu::menu_plugin, cards::cards_plugin))
+        .add_plugins((menu::menu_plugin, cards::cards_plugin, game::game_plugin))
         .add_systems(Update, manage_app_state)
         .add_systems(OnEnter(AppState::Loading), start_load)
         .run();
