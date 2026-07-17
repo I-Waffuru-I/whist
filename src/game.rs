@@ -1,7 +1,7 @@
 
 use bevy::prelude::*;
 
-use crate::{AppState, cards::PlayedCards, player::{Cards, Dealer, PPosition, Participant, Player, WonTricks}};
+use crate::{AppState, cards::{Card, PlayedCards}, player::{Cards, Dealer, PPosition, Participant, Player, WonTricks}};
 
 
 pub fn game_plugin(app : &mut App){
@@ -12,9 +12,14 @@ pub fn game_plugin(app : &mut App){
         .add_systems(OnEnter(AppState::Game), setup_participants);
 }
 
+fn setup(mut next_game_state : ResMut<NextState<GameState>>){
+    next_game_state.set(GameState::StartRound);
+}
+
 #[derive(States, Default, Debug, PartialEq, Eq, Hash, Clone)]
 pub enum GameState {
     #[default]
+    Idle,
     StartRound,
     StartTrick,
     EndTrick,
@@ -23,13 +28,16 @@ pub enum GameState {
 
 fn start_round(
     mut dealer : ResMut<Dealer>,
-    played_cards : ResMut<PlayedCards>, 
+    mut played_cards : ResMut<PlayedCards>, 
     mut participants : Query<(Entity, &mut Cards, &PPosition), With<Participant>>,
     mut next_game_state : ResMut<NextState<GameState>>,
 ){
     dealer.0 = dealer.0.next();
 
+    dbg!(&played_cards.0);
     // cut deck 
+    played_cards.cut_random();
+    dbg!(&played_cards.0);
 
     // distribute cards
     let mut players : Vec<Entity> = vec!();
@@ -42,21 +50,20 @@ fn start_round(
     }
 
     // distribute cards to players
-    // 2 x 4
     let mut i : usize = 0;
-    for _ in 0..=1 {
-        for entity in &mut players {
-            if let Ok(mut p) = participants.get_mut(*entity) {
-                for card in 0..=3 {
+    let rounds : [usize;3] = [4, 4, 5];
+    for r in rounds {
+        for card in 0..=r {
+            for entity in &mut players {
+                if let Ok(mut p) = participants.get_mut(*entity) {
                     if let Some(c) = played_cards.0.iter().nth(i+card) {
                         p.1.0.push(c.clone());
                     }
+                    i += 4;
                 }
-                i += 4;
             }
         }
     }
-    // 1 x 5
 
     // finish setup
     next_game_state.set(GameState::StartTrick);
@@ -66,7 +73,7 @@ fn start_trick(){
 
 }
 
-fn setup_participants(mut commands : Commands){
+fn setup_participants(mut commands : Commands, mut next_game_state : ResMut<NextState<GameState>>){
     commands.spawn((
         Player,
         Participant,
@@ -92,4 +99,8 @@ fn setup_participants(mut commands : Commands){
         Cards::default(),
         WonTricks::default(),
     ));
+
+    next_game_state.set(GameState::StartRound);
 }
+
+
