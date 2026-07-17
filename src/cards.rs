@@ -20,22 +20,25 @@ impl PlayedCards {
         self.cut(pos);
     }
 
-    pub fn cut(&mut self, pos : usize){
-        let mut i = self.0.len();
+    pub fn cut(&mut self, pos: usize) {
+        let mut base = 0usize;
+        let mut len = self.0.len();
         let mut k = pos;
-        while i > 0 {
-            if k >= i/2 {
-                //swap with start
-                k = i-k;
-                dbg!("more",i,k);
-                self.swap_range(i-2*k, i-k, i-k, i);
+
+        while k != 0 && k != len {
+            if k < len - k {
+                // rotation amount is smaller: swap first k with last k,
+                // then shrink the window from the back
+                self.swap_range(base, base + k, base + len - k, base + len);
+                len -= k;
             } else {
-                // reduce k
-                // swap with end
-                dbg!("less",i,k);
-                self.swap_range(0, k, i-k, i);
+                // swap start and move base
+                let m = len - k;
+                self.swap_range(base, base + m, base + m, base + 2 * m);
+                base += m;
+                len = k;
+                k -= m;
             }
-            i -= k;
         }
     }
 
@@ -126,8 +129,12 @@ fn test_cut(){
     assert!(&played.0.len() == &52usize);
 
     clone.0 = played.0.clone();
-    played.cut(10);
-    assert!(played.0.iter().nth(5) != clone.0.iter().nth(5));
+    played.cut(5);
+    dbg!(&played.0[45..]);
+    dbg!(&clone.0[45..]);
+
+    assert!(played.0.iter().nth(51) == clone.0.iter().nth(4));
+    assert!(&played.0.len() == &52usize);
 
 }
 
